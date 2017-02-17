@@ -4,5 +4,8 @@
   "description": "set up token authentication via express server",
   "main": "index.js",
   "author": "Tyrus Brenc",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.14.1"
+  }
 }
