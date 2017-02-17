@@ -1,0 +1,8 @@
+{
+  "name": "sequr",
+  "version": "1.0.0",
+  "description": "set up token authentication via express server",
+  "main": "index.js",
+  "author": "Tyrus Brenc",
+  "license": "MIT"
+}
