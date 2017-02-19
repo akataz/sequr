@@ -35,6 +35,79 @@ app.get('/', function(req, res) {
 
 // API ROUTES -------------------
 // we'll get to these in a second
+app.get('/setup', function(req, res) {
+
+  // create a sample user
+  var tyrus = new User({ 
+    name: 'Tyrus Brenc', 
+    password: 'password',
+    admin: true 
+  });
+
+  // save the sample user
+  tyrus.save(function(err) {
+    if (err) throw err;
+
+    console.log('User saved successfully');
+    res.json({ success: true });
+  });
+});
+
+var apiRoutes = express.Router(); 
+// TODO: route to authenticate a user (POST http://localhost:8080/api/authenticate)
+apiRoutes.post('/authenticate', function(req, res) {
+
+  // find the user
+  User.findOne({
+    name: req.body.name
+  }, function(err, user) {
+
+    if (err) throw err;
+
+    if (!user) {
+      res.json({ success: false, message: 'Authentication failed. User not found.' });
+    } else if (user) {
+
+      // check if password matches
+      if (user.password != req.body.password) {
+        res.json({ success: false, message: 'Authentication failed. Wrong password.' });
+      } else {
+
+        // if user is found and password is right
+        // create a token
+        var token = jwt.sign(user, app.get('superSecret'), {
+          expiresIn: 60*60*24 // expires in 24 hours
+        });
+
+        // return the information including token as JSON
+        res.json({
+          success: true,
+          message: 'Enjoy your token!',
+          token: token
+        });
+      }   
+
+    }
+
+  });
+});
+
+// TODO: route middleware to verify a token
+
+// route to show a random message (GET http://localhost:8080/api/)
+apiRoutes.get('/', function(req, res) {
+  res.json({ message: 'Welcome to the coolest API on earth!' });
+});
+
+// route to return all users (GET http://localhost:8080/api/users)
+apiRoutes.get('/users', function(req, res) {
+  User.find({}, function(err, users) {
+    res.json(users);
+  });
+});   
+
+// apply the routes to our application with the prefix /api
+app.use('/api', apiRoutes);
 
 // =======================
 // start the server ======
