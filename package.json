@@ -6,9 +6,11 @@
   "author": "Tyrus Brenc",
   "license": "MIT",
   "dependencies": {
+    "bluebird": "^3.4.7",
     "body-parser": "^1.16.1",
     "express": "^4.14.1",
     "jsonwebtoken": "^7.3.0",
+    "mongod": "^2.0.0",
     "mongoose": "^4.8.3",
     "morgan": "^1.8.1"
   }
