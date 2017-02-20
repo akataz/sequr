@@ -1,20 +1,20 @@
-// =======================
-// get the packages we need ============
-// =======================
+//packages
 var express     = require('express');
 var app         = express();
 var bodyParser  = require('body-parser');
 var morgan      = require('morgan');
 var mongoose    = require('mongoose');
+var Promise 	  = require('bluebird');
 
 var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var config = require('./config'); // get our config file
 var User   = require('./app/models/user'); // get our mongoose model
+var jwtVerifyAsync = Promise.promisify(jwt.verify, jwt);
     
 // =======================
 // configuration =========
 // =======================
-var port = process.env.PORT || 3000; // used to create, sign, and verify tokens
+var port = process.env.PORT || 3000;
 mongoose.connect(config.database); // connect to database
 app.set('superSecret', config.secret); // secret variable
 
@@ -54,7 +54,7 @@ app.get('/setup', function(req, res) {
 });
 
 var apiRoutes = express.Router(); 
-// TODO: route to authenticate a user (POST http://localhost:8080/api/authenticate)
+//route to authenticate a user (POST http://localhost:8080/api/authenticate)
 apiRoutes.post('/authenticate', function(req, res) {
 
   // find the user
@@ -82,7 +82,7 @@ apiRoutes.post('/authenticate', function(req, res) {
         // return the information including token as JSON
         res.json({
           success: true,
-          message: 'Enjoy your token!',
+          message: 'Here is your token!',
           token: token
         });
       }   
@@ -92,7 +92,7 @@ apiRoutes.post('/authenticate', function(req, res) {
   });
 });
 
-// TODO: route middleware to verify a token
+//route middleware to verify a token
 apiRoutes.use(function(req, res, next) {
 
   // check header or url parameters or post parameters for token
@@ -102,15 +102,22 @@ apiRoutes.use(function(req, res, next) {
   if (token) {
 
     // verifies secret and checks exp
-    jwt.verify(token, app.get('superSecret'), function(err, decoded) {      
-      if (err) {
-        return res.json({ success: false, message: 'Failed to authenticate token.' });    
-      } else {
-        // if everything is good, save to request for use in other routes
-        req.decoded = decoded;    
-        next();
-      }
-    });
+    jwtVerifyAsync(token, app.get('superSecret'))   
+      // if (err) {
+      //   return res.json({ success: false, message: 'Failed to authenticate token.' });    
+      // } else {
+      //   // if everything is good, save to request for use in other routes
+      //   req.decoded = decoded;    
+      //   next();
+      // }
+      .then(function(decoded){
+        req.decoded = decoded;
+        next();    
+      })
+      .catch(function(err){
+        return res.json({ success: false, message: 'Failed to authenticate token.' });
+      })
+
 
   } else {
 
