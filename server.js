@@ -7,14 +7,17 @@ var mongoose    = require('mongoose');
 var Promise 	  = require('bluebird');
 
 var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
-var config = require('./config'); // get our config file
-var User   = require('./app/models/user'); // get our mongoose model
+var config = require('./config'); // get the config file
+var User   = require('./app/models/user'); // get the mongoose model
+//create promisified version of jwt verify
 var jwtVerifyAsync = Promise.promisify(jwt.verify, jwt);
-    
+//create promisified version of mongoose
+mongoose.Promise = require('bluebird');
+
 // =======================
 // configuration =========
 // =======================
-var port = process.env.PORT || 3000;
+var port = 3000;
 mongoose.connect(config.database); // connect to database
 app.set('superSecret', config.secret); // secret variable
 
@@ -34,10 +37,9 @@ app.get('/', function(req, res) {
 });
 
 // API ROUTES -------------------
-// we'll get to these in a second
 app.get('/setup', function(req, res) {
 
-  // create a sample user
+  // create a user to later verify
   var tyrus = new User({ 
     name: 'Tyrus Brenc', 
     password: 'password',
@@ -103,13 +105,6 @@ apiRoutes.use(function(req, res, next) {
 
     // verifies secret and checks exp
     jwtVerifyAsync(token, app.get('superSecret'))   
-      // if (err) {
-      //   return res.json({ success: false, message: 'Failed to authenticate token.' });    
-      // } else {
-      //   // if everything is good, save to request for use in other routes
-      //   req.decoded = decoded;    
-      //   next();
-      // }
       .then(function(decoded){
         req.decoded = decoded;
         next();    
@@ -117,7 +112,6 @@ apiRoutes.use(function(req, res, next) {
       .catch(function(err){
         return res.json({ success: false, message: 'Failed to authenticate token.' });
       })
-
 
   } else {
 
@@ -146,8 +140,6 @@ apiRoutes.get('/users', function(req, res) {
 // apply the routes to our application with the prefix /api
 app.use('/api', apiRoutes);
 
-// =======================
-// start the server ======
-// =======================
+//start server
 app.listen(port);
 console.log('Now listening on http://localhost:' + port);
